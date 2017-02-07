@@ -2,6 +2,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.biosensing">
 
+    <!--BLE permissions to request a connection, accept a connection, and transfer data.-->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+
+    <!-- If you want your app to initiate device discovery or manipulate Bluetooth settings, you must
+    also declare the BLUETOOTH_ADMIN permission. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+    <!-- Available to devices that do not support BLE. -->
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+
+    <!-- In order to receive location updates. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <!-- Needed only for Android 5.0 or higher. -->
+    <uses-feature android:name="android.hardware.location.gps"/>
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
