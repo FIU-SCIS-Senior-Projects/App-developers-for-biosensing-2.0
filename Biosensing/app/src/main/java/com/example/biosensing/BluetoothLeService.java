@@ -65,6 +65,10 @@ public class BluetoothLeService extends Service {
 
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
+    public final static UUID UUID_IR_TEMP_DATA =
+            UUID.fromString(SampleGattAttributes.IR_TEMP_DATA);
+    public final static UUID UUID_HUMIDITY_DATA =
+            UUID.fromString(SampleGattAttributes.HUMIDITY_DATA);
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -141,7 +145,26 @@ public class BluetoothLeService extends Service {
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
-        } else {
+        }
+        else if (UUID_IR_TEMP_DATA.equals(characteristic.getUuid())) {
+            Log.d(TAG, "Temp format UINT16.");
+            byte[] value = characteristic.getValue();
+            if (value != null && value.length > 0) {
+                Temperature temp = SensorDataConverter.convertTemp(value);
+                Log.d(TAG, temp.toString());
+                intent.putExtra(EXTRA_DATA, temp.toString());
+            }
+        }
+        else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
+            Log.d(TAG, "Humidity format UINT16.");
+            byte[] value = characteristic.getValue();
+            if (value != null && value.length > 0) {
+                double humidity = SensorDataConverter.convertHum(value);
+                Log.d(TAG, String.format("%.1f %%rH", humidity));
+                intent.putExtra(EXTRA_DATA, String.format("%.1f %%rH", humidity));
+            }
+        }
+        else {
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
@@ -285,7 +308,7 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * Enables or disables notification on a give characteristic.
+     * Enables or disables notification on a given characteristic.
      *
      * @param characteristic Characteristic to act on.
      * @param enabled If true, enable notification.  False otherwise.
@@ -305,6 +328,21 @@ public class BluetoothLeService extends Service {
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBluetoothGatt.writeDescriptor(descriptor);
         }
+
+        else if (UUID_IR_TEMP_DATA.equals(characteristic.getUuid())) {
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBluetoothGatt.writeDescriptor(descriptor);
+        }
+
+        else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBluetoothGatt.writeDescriptor(descriptor);
+        }
+
     }
 
     /**
@@ -317,5 +355,22 @@ public class BluetoothLeService extends Service {
         if (mBluetoothGatt == null) return null;
 
         return mBluetoothGatt.getServices();
+    }
+
+    public void writeCharacteristic(BluetoothGattCharacteristic characteristic){
+        byte[] val = new byte[1];
+        val[0] = (byte)0x01;
+        /*
+        byte [] charVal = characteristic.getValue();
+        if (charVal != null) {
+            if ((charVal[0] & val[0]) != 0) {
+                characteristic.setValue(val);
+                mBluetoothGatt.writeCharacteristic(characteristic);
+            }
+        }
+        */
+        characteristic.setValue(val);
+        mBluetoothGatt.writeCharacteristic(characteristic);
+
     }
 }

@@ -65,6 +65,10 @@ public class DeviceControlActivity extends Activity {
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
 
+    private final String IR_TEMP_CONFIG = "f000aa02-0451-4000-b000-000000000000";
+    private final String HUMIDITY_CONFIG = "f000aa22-0451-4000-b000-000000000000";
+    private final String BAROMETRIC_CONFIG = "f000aa42-0451-4000-b000-000000000000";
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -126,6 +130,22 @@ public class DeviceControlActivity extends Activity {
                         final BluetoothGattCharacteristic characteristic =
                                 mGattCharacteristics.get(groupPosition).get(childPosition);
                         final int charaProp = characteristic.getProperties();
+
+                        /*
+                        if (characteristic.getUuid().toString().equals(IR_TEMP_CONFIG)) {
+                            byte[] charVal = characteristic.getValue();
+                            byte flag = 0x01;
+                            if(charVal == null)
+                            {
+                                mBluetoothLeService.writeCharacteristic(characteristic);
+                            }
+                            else if((charVal[0] & flag) != 0)
+                            {
+                                mBluetoothLeService.writeCharacteristic(characteristic);
+                            }
+                        }
+                        */
+
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
                             // If there is an active notification on a characteristic, clear
                             // it first so it doesn't update the data field on the user interface.
@@ -141,6 +161,7 @@ public class DeviceControlActivity extends Activity {
                             mBluetoothLeService.setCharacteristicNotification(
                                     characteristic, true);
                         }
+
                         return true;
                     }
                     return false;
@@ -275,10 +296,22 @@ public class DeviceControlActivity extends Activity {
                 charas.add(gattCharacteristic);
                 HashMap<String, String> currentCharaData = new HashMap<String, String>();
                 uuid = gattCharacteristic.getUuid().toString();
+
+
                 currentCharaData.put(
                         LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
                 currentCharaData.put(LIST_UUID, uuid);
                 gattCharacteristicGroupData.add(currentCharaData);
+                //Enable temp
+                if (uuid.equals(IR_TEMP_CONFIG)) {
+                    mBluetoothLeService.writeCharacteristic(gattCharacteristic);
+                }
+                /*
+                //Enable humidity
+                if (uuid.equals(HUMIDITY_CONFIG)){
+                    mBluetoothLeService.writeCharacteristic(gattCharacteristic);
+                }
+                */
             }
             mGattCharacteristics.add(charas);
             gattCharacteristicData.add(gattCharacteristicGroupData);
