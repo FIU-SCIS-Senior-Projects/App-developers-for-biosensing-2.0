@@ -1,7 +1,8 @@
 package com.example.biosensing;
 
-import android.app.ActionBar;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,10 +11,13 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -26,6 +30,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.Manifest;
 
 //Looks for devices
 public class MainActivity extends ListActivity {
@@ -42,7 +47,8 @@ public class MainActivity extends ListActivity {
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
 
-    private ActionBar actionBar;
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    private final static String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +61,27 @@ public class MainActivity extends ListActivity {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
+        }
+
+        //Runtime Permission for Android 6.0
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(this.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED)
+            {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("This app needs location access");
+                builder.setMessage("Please grant location access so this app can detect beacons.");
+                builder.setPositiveButton(android.R.string.ok, null);
+
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    @TargetApi(23)
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                    }
+                });
+                builder.show();
+            }
         }
 
         //Initializes Bluetooth adapter.
@@ -287,5 +314,30 @@ public class MainActivity extends ListActivity {
     static class ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_COARSE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "coarse location permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Functionality limited");
+                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons when in the background.");
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                        }
+                    });
+                    builder.show();
+                }
+                return;
+            }
+        }
     }
 }

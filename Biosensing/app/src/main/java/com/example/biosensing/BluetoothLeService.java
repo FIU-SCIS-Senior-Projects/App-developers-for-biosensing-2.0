@@ -155,8 +155,8 @@ public class BluetoothLeService extends Service {
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Temperature temp = SensorDataConverter.convertTemp(value);
-                Log.d(TAG, temp.toString());
-                intent.putExtra(EXTRA_DATA, temp.toString());
+                Log.d(TAG, temp.displayFahrenheit());
+                intent.putExtra(EXTRA_DATA, temp.displayFahrenheit());
             }
         }
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {

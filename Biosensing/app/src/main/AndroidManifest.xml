@@ -13,7 +13,7 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <!-- In order to receive location updates. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <!-- Needed only for Android 5.0 or higher. -->
     <uses-feature android:name="android.hardware.location.gps"/>
