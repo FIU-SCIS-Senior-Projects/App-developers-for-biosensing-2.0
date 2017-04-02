@@ -14,6 +14,7 @@ public class Temperature {
         this.target = target;
     }
 
+    //return celsius
     public double getAmbient()
     {
         return ambient;
@@ -22,6 +23,15 @@ public class Temperature {
     public double getTarget()
     {
         return target;
+    }
+
+    //return fahrenheit
+    public double getAmbientFahr(){
+        return ambient * 1.8 + 32;
+    }
+
+    public double getTargetFahr(){
+        return target * 1.8 + 32;
     }
 
     public String displayCelsius()

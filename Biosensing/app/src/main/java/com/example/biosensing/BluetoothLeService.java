@@ -32,6 +32,9 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,6 +57,9 @@ public class BluetoothLeService extends Service {
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
+
+    private ConnectionClass connectionClass;
+    private Connection con;
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -149,14 +155,43 @@ public class BluetoothLeService extends Service {
             heartRate = (int)currentEquation(heartRate);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
+
+            //push heart rate data to db
+            PreparedStatement prep = null;
+            String query = "insert into dbo.heart (rate) values (?)";
+            try{
+                prep = con.prepareStatement(query);
+                prep.setInt(1, heartRate);
+                prep.executeUpdate();
+            }
+            catch(SQLException se){
+                Log.e("SQLERROR", se.getMessage());
+            }
         }
         else if (UUID_IR_TEMP_DATA.equals(characteristic.getUuid())) {
             Log.d(TAG, "Temp format UINT16.");
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Temperature temp = SensorDataConverter.convertTemp(value);
-                Log.d(TAG, temp.displayFahrenheit());
-                intent.putExtra(EXTRA_DATA, temp.displayFahrenheit());
+                Log.d(TAG, temp.toString());
+                intent.putExtra(EXTRA_DATA, temp.toString());
+
+                //push temp data to db
+                PreparedStatement prep1 = null;
+                PreparedStatement prep2 = null;
+                String query1 = "insert into dbo.tempA (temp) values (?)";
+                String query2 = "insert into dbo.tempT (temp) values (?)";
+                try{
+                    prep1 = con.prepareStatement(query1);
+                    prep2 = con.prepareStatement(query2);
+                    prep1.setDouble(1, temp.getAmbientFahr());
+                    prep2.setDouble(1, temp.getTargetFahr());
+                    prep1.executeUpdate();
+                    prep2.executeUpdate();
+                }
+                catch(SQLException se){
+                    Log.e("SQLERROR", se.getMessage());
+                }
             }
         }
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
@@ -166,6 +201,18 @@ public class BluetoothLeService extends Service {
                 double humidity = SensorDataConverter.convertHum(value);
                 Log.d(TAG, String.format("%.1f %%rH", humidity));
                 intent.putExtra(EXTRA_DATA, String.format("%.1f %%rH", humidity));
+
+                //push humidity data to db
+                PreparedStatement prep = null;
+                String query = "insert into dbo.hum (hum) values (?)";
+                try{
+                    prep = con.prepareStatement(query);
+                    prep.setDouble(1, humidity);
+                    prep.executeUpdate();
+                }
+                catch(SQLException se){
+                    Log.e("SQLERROR", se.getMessage());
+                }
             }
         }
         else {
@@ -209,6 +256,10 @@ public class BluetoothLeService extends Service {
      * @return Return true if the initialization is successful.
      */
     public boolean initialize() {
+        //Connect to SQL Server
+        connectionClass = new ConnectionClass();
+        con = connectionClass.CONN();
+
         // For API level 18 and above, get a reference to BluetoothAdapter through
         // BluetoothManager.
         if (mBluetoothManager == null) {
