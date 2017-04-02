@@ -17,6 +17,7 @@
 package com.example.biosensing;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -34,6 +35,7 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +47,8 @@ import java.util.List;
  * communicates with {@code BluetoothLeService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class DeviceControlActivity extends Activity {
+public class DeviceControlActivity extends Activity
+        implements EquationDialog.EquationDialogListener{
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -224,9 +227,11 @@ public class DeviceControlActivity extends Activity {
         if (mConnected) {
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_disconnect).setVisible(true);
+            menu.findItem(R.id.menu_settings).setVisible(true);
         } else {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
+            menu.findItem(R.id.menu_settings).setVisible(false);
         }
         return true;
     }
@@ -239,6 +244,9 @@ public class DeviceControlActivity extends Activity {
                 return true;
             case R.id.menu_disconnect:
                 mBluetoothLeService.disconnect();
+                return true;
+            case R.id.menu_settings:
+                showEquationDialog();
                 return true;
             case android.R.id.home:
                 onBackPressed();
@@ -338,5 +346,28 @@ public class DeviceControlActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        EquationDialog eDialog = (EquationDialog)dialog;
+
+        mBluetoothLeService.setRtia(eDialog.getRtia());
+        mBluetoothLeService.setVref_Div(eDialog.getVref());
+
+        Context context = getApplicationContext();
+        CharSequence text = "Vref_div was changed to " + mBluetoothLeService.getVref_Div() +
+                " and Rtia was changed to " + mBluetoothLeService.getRtia();
+        int duration = Toast.LENGTH_LONG;
+
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
+
+    public void showEquationDialog() {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new EquationDialog();
+        dialog.show(getFragmentManager(), "EquationDialog");
     }
 }

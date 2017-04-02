@@ -24,9 +24,15 @@ public class Temperature {
         return target;
     }
 
-    public String toString()
+    public String displayCelsius()
     {
         return "Ambient Temp: " + String.format("%.1f°C", ambient) +
                 "\nTarget Temp: " + String.format("%.1f°C", target);
+    }
+
+    public String displayFahrenheit()
+    {
+        return "Ambient Temp: " + String.format("%.1f°F", (ambient * 1.8) + 32) +
+                "\nTarget Temp: " + String.format("%.1f°F", (target * 1.8) + 32);
     }
 }

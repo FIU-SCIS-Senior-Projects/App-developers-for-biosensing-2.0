@@ -48,6 +48,9 @@ public class BluetoothLeService extends Service {
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
 
+    private double vRef_Div = 0.1645;
+    private double rTia = 350000;
+
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
@@ -142,7 +145,8 @@ public class BluetoothLeService extends Service {
                 format = BluetoothGattCharacteristic.FORMAT_UINT8;
                 Log.d(TAG, "Heart rate format UINT8.");
             }
-            final int heartRate = characteristic.getIntValue(format, 1);
+            int heartRate = characteristic.getIntValue(format, 1);
+            heartRate = (int)currentEquation(heartRate);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         }
@@ -151,8 +155,8 @@ public class BluetoothLeService extends Service {
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Temperature temp = SensorDataConverter.convertTemp(value);
-                Log.d(TAG, temp.toString());
-                intent.putExtra(EXTRA_DATA, temp.toString());
+                Log.d(TAG, temp.displayFahrenheit());
+                intent.putExtra(EXTRA_DATA, temp.displayFahrenheit());
             }
         }
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
@@ -372,5 +376,37 @@ public class BluetoothLeService extends Service {
         characteristic.setValue(val);
         mBluetoothGatt.writeCharacteristic(characteristic);
 
+    }
+
+    public double currentEquation(int value)
+    {
+        double vOut;
+        double current;
+
+        vOut = (value/1023) * 3.3;
+        current = (vRef_Div - vOut)/rTia;
+
+        return current;
+    }
+
+
+    public void setVref_Div(double value)
+    {
+        vRef_Div = value;
+    }
+
+    public double getVref_Div()
+    {
+        return vRef_Div;
+    }
+
+    public void setRtia(double value)
+    {
+        rTia = value;
+    }
+
+    public double getRtia()
+    {
+        return rTia;
     }
 }
