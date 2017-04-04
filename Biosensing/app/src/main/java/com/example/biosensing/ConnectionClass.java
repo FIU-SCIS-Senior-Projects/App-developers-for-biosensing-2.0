@@ -37,7 +37,7 @@ public class ConnectionClass {
         } catch (Exception e) {
             Log.e("ERROR", e.getMessage());
         }
-        Log.d(TAG, "Connected to SQL Server");
+        Log.i(TAG, "Connected to SQL Server");
         return conn;
     }
 }

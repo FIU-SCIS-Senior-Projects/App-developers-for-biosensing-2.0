@@ -40,9 +40,14 @@ public class Temperature {
                 "\nTarget Temp: " + String.format("%.1f°C", target);
     }
 
-    public String displayFahrenheit()
+    @Override
+    public String toString()
     {
         return "Ambient Temp: " + String.format("%.1f°F", (ambient * 1.8) + 32) +
                 "\nTarget Temp: " + String.format("%.1f°F", (target * 1.8) + 32);
+    }
+
+    public Temperature clone(){
+        return new Temperature(this.getAmbient(), this.getTarget());
     }
 }

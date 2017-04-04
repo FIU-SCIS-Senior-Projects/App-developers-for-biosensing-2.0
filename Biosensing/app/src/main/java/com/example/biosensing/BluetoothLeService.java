@@ -35,8 +35,11 @@ import android.util.Log;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -60,6 +63,8 @@ public class BluetoothLeService extends Service {
 
     private ConnectionClass connectionClass;
     private Connection con;
+    private Temperature temperature;
+    private ExecutorService exService;
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -173,25 +178,26 @@ public class BluetoothLeService extends Service {
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Temperature temp = SensorDataConverter.convertTemp(value);
+                temperature = temp.clone();
                 Log.d(TAG, temp.toString());
                 intent.putExtra(EXTRA_DATA, temp.toString());
 
                 //push temp data to db
-                PreparedStatement prep1 = null;
-                PreparedStatement prep2 = null;
-                String query1 = "insert into dbo.tempA (temp) values (?)";
-                String query2 = "insert into dbo.tempT (temp) values (?)";
-                try{
-                    prep1 = con.prepareStatement(query1);
-                    prep2 = con.prepareStatement(query2);
-                    prep1.setDouble(1, temp.getAmbientFahr());
-                    prep2.setDouble(1, temp.getTargetFahr());
-                    prep1.executeUpdate();
-                    prep2.executeUpdate();
-                }
-                catch(SQLException se){
-                    Log.e("SQLERROR", se.getMessage());
-                }
+//                PreparedStatement prep1 = null;
+//                PreparedStatement prep2 = null;
+//                String query1 = "insert into dbo.tempA (temp) values (?)";
+//                String query2 = "insert into dbo.tempT (temp) values (?)";
+//                try{
+//                    prep1 = con.prepareStatement(query1);
+//                    prep2 = con.prepareStatement(query2);
+//                    prep1.setDouble(1, temp.getAmbientFahr());
+//                    prep2.setDouble(1, temp.getTargetFahr());
+//                    prep1.executeUpdate();
+//                    prep2.executeUpdate();
+//                }
+//                catch(SQLException se){
+//                    Log.e("SQLERROR", se.getMessage());
+//                }
             }
         }
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
@@ -259,6 +265,42 @@ public class BluetoothLeService extends Service {
         //Connect to SQL Server
         connectionClass = new ConnectionClass();
         con = connectionClass.CONN();
+
+
+        exService = Executors.newSingleThreadExecutor();
+        exService.execute(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    if(temperature != null){
+                        PreparedStatement prep1 = null;
+                        PreparedStatement prep2 = null;
+                        String query1 = "insert into dbo.tempA (temp) values (?)";
+                        String query2 = "insert into dbo.tempT (temp) values (?)";
+                        try{
+                            prep1 = con.prepareStatement(query1);
+                            prep2 = con.prepareStatement(query2);
+                            prep1.setDouble(1, temperature.getAmbientFahr());
+                            prep2.setDouble(1, temperature.getTargetFahr());
+                            prep1.executeUpdate();
+                            prep2.executeUpdate();
+                        }
+                        catch(SQLException se){
+                            Log.e("SQLERROR", se.getMessage());
+                        }
+                    }
+                    try{
+                        Thread.sleep(30000);
+                    }
+                    catch(InterruptedException ie){
+                        Log.e(TAG, ie.getMessage());
+                    }
+
+
+                }
+            }
+        });
+
 
         // For API level 18 and above, get a reference to BluetoothAdapter through
         // BluetoothManager.
