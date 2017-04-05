@@ -162,16 +162,7 @@ public class BluetoothLeService extends Service {
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
 
             //push heart rate data to db
-            PreparedStatement prep = null;
-            String query = "insert into dbo.heart (rate) values (?)";
-            try{
-                prep = con.prepareStatement(query);
-                prep.setInt(1, heartRate);
-                prep.executeUpdate();
-            }
-            catch(SQLException se){
-                Log.e("SQLERROR", se.getMessage());
-            }
+
         }
         else if (UUID_IR_TEMP_DATA.equals(characteristic.getUuid())) {
             Log.d(TAG, "Temp format UINT16.");
@@ -182,22 +173,6 @@ public class BluetoothLeService extends Service {
                 Log.d(TAG, temp.toString());
                 intent.putExtra(EXTRA_DATA, temp.toString());
 
-                //push temp data to db
-//                PreparedStatement prep1 = null;
-//                PreparedStatement prep2 = null;
-//                String query1 = "insert into dbo.tempA (temp) values (?)";
-//                String query2 = "insert into dbo.tempT (temp) values (?)";
-//                try{
-//                    prep1 = con.prepareStatement(query1);
-//                    prep2 = con.prepareStatement(query2);
-//                    prep1.setDouble(1, temp.getAmbientFahr());
-//                    prep2.setDouble(1, temp.getTargetFahr());
-//                    prep1.executeUpdate();
-//                    prep2.executeUpdate();
-//                }
-//                catch(SQLException se){
-//                    Log.e("SQLERROR", se.getMessage());
-//                }
             }
         }
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
@@ -209,16 +184,7 @@ public class BluetoothLeService extends Service {
                 intent.putExtra(EXTRA_DATA, String.format("%.1f %%rH", humidity));
 
                 //push humidity data to db
-                PreparedStatement prep = null;
-                String query = "insert into dbo.hum (hum) values (?)";
-                try{
-                    prep = con.prepareStatement(query);
-                    prep.setDouble(1, humidity);
-                    prep.executeUpdate();
-                }
-                catch(SQLException se){
-                    Log.e("SQLERROR", se.getMessage());
-                }
+
             }
         }
         else {
