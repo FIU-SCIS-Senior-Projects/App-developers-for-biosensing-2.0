@@ -35,4 +35,12 @@ public class Temperature {
         return "Ambient Temp: " + String.format("%.1f°F", (ambient * 1.8) + 32) +
                 "\nTarget Temp: " + String.format("%.1f°F", (target * 1.8) + 32);
     }
+
+    public double getAmbientInFahrenheit(){
+        return ((ambient * 1.8) + 32);
+    }
+
+    public double getTargetInFahrenheit(){
+        return ((target * 1.8) + 32);
+    }
 }

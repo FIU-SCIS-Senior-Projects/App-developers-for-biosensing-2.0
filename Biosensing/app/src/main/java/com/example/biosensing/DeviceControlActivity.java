@@ -370,4 +370,5 @@ public class DeviceControlActivity extends Activity
         DialogFragment dialog = new EquationDialog();
         dialog.show(getFragmentManager(), "EquationDialog");
     }
+
 }

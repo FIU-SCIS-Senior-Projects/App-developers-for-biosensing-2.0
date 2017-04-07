@@ -72,6 +72,8 @@ public class BluetoothLeService extends Service {
             UUID.fromString(SampleGattAttributes.IR_TEMP_DATA);
     public final static UUID UUID_HUMIDITY_DATA =
             UUID.fromString(SampleGattAttributes.HUMIDITY_DATA);
+    public final static UUID UUID_TEMPERATURE_MEASUREMENT =
+            UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -145,8 +147,9 @@ public class BluetoothLeService extends Service {
                 format = BluetoothGattCharacteristic.FORMAT_UINT8;
                 Log.d(TAG, "Heart rate format UINT8.");
             }
-            int heartRate = characteristic.getIntValue(format, 1);
-            heartRate = (int)currentEquation(heartRate);
+            final int heartRate = characteristic.getIntValue(format, 1);
+            //int heartRate = characteristic.getIntValue(format, 1);
+            //heartRate = (int)currentEquation(heartRate);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         }
@@ -167,6 +170,14 @@ public class BluetoothLeService extends Service {
                 Log.d(TAG, String.format("%.1f %%rH", humidity));
                 intent.putExtra(EXTRA_DATA, String.format("%.1f %%rH", humidity));
             }
+        }
+        else if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())){
+            int format = BluetoothGattCharacteristic.FORMAT_FLOAT;
+            final float tempMeasurement = characteristic.getFloatValue(format, 1);
+            //float tempMeasurement = characteristic.getFloatValue(format, 1);
+            //tempMeasurement = (int)currentEquation(tempMeasurement);
+            Log.d(TAG, String.format("Received temperature: %f", tempMeasurement));
+            intent.putExtra(EXTRA_DATA, String.valueOf(tempMeasurement));
         }
         else {
             // For all other profiles, writes the data formatted in HEX.
@@ -341,6 +352,12 @@ public class BluetoothLeService extends Service {
         }
 
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBluetoothGatt.writeDescriptor(descriptor);
+        }
+        else if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())){
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                     UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
