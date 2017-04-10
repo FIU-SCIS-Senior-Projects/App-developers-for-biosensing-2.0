@@ -71,10 +71,16 @@
         android:layout_width="match_parent"
         android:layout_height="330dp" />
 
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <Button
-        android:id="@+id/graphs"
+        android:id="@+id/button3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="graphsButton"
-        android:text="Graphs" />
+        android:onClick="chooseGraph"
+        android:text="Go" />
+
 </LinearLayout>

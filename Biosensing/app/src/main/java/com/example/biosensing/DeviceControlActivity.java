@@ -32,8 +32,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,7 +51,7 @@ import java.util.List;
  * Bluetooth LE API.
  */
 public class DeviceControlActivity extends Activity
-        implements EquationDialog.EquationDialogListener{
+        implements EquationDialog.EquationDialogListener {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -71,6 +74,8 @@ public class DeviceControlActivity extends Activity
     private final String IR_TEMP_CONFIG = "f000aa02-0451-4000-b000-000000000000";
     private final String HUMIDITY_CONFIG = "f000aa22-0451-4000-b000-000000000000";
     private final String BAROMETRIC_CONFIG = "f000aa42-0451-4000-b000-000000000000";
+
+    private int spinnerPos;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -196,6 +201,56 @@ public class DeviceControlActivity extends Activity
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+        //set up spinner
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.graphs_choice, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinnerPos = position;
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+    }
+
+    //on click of button
+    public void chooseGraph(View view){
+        Intent intent = new Intent(this, DeviceControlActivity.class);
+
+        switch(spinnerPos){
+            //user chose ambient temp
+            case 0:
+                intent = new Intent(this, GraphsActivity.class);
+                break;
+            //target temp
+            case 1:
+                intent = new Intent(this, GraphsActivity.class);
+                break;
+            //heart rate
+            case 2:
+                intent = new Intent(this, GraphsActivity.class);
+                break;
+            //health thermometer
+            case 3:
+                intent = new Intent(this, GraphsActivity.class);
+                break;
+        }
+        startActivity(intent);
     }
 
     @Override
@@ -371,8 +426,7 @@ public class DeviceControlActivity extends Activity
         dialog.show(getFragmentManager(), "EquationDialog");
     }
 
-    public void graphsButton(View view){
-        Intent intent = new Intent(this, GraphsActivity.class);
-        startActivity(intent);
-    }
+
+
+
 }

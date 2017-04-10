@@ -238,6 +238,7 @@ public class BluetoothLeService extends Service {
             @Override
             public void run() {
                 while(true){
+                    //push temp data to server ever 30 secs
                     if(temperature != null){
                         PreparedStatement prep1 = null;
                         PreparedStatement prep2 = null;
@@ -250,6 +251,7 @@ public class BluetoothLeService extends Service {
                             prep2.setDouble(1, temperature.getTargetFahr());
                             prep1.executeUpdate();
                             prep2.executeUpdate();
+                            temperature = null;
                         }
                         catch(SQLException se){
                             Log.e("SQLERROR", se.getMessage());
@@ -261,6 +263,8 @@ public class BluetoothLeService extends Service {
                     catch(InterruptedException ie){
                         Log.e(TAG, ie.getMessage());
                     }
+
+                    //push heart rate data every 30 secs
 
 
                 }
