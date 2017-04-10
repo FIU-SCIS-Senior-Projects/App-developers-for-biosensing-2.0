@@ -14,6 +14,7 @@ public class Temperature {
         this.target = target;
     }
 
+    //return celsius
     public double getAmbient()
     {
         return ambient;
@@ -24,9 +25,28 @@ public class Temperature {
         return target;
     }
 
-    public String toString()
+    //return fahrenheit
+    public double getAmbientFahr(){
+        return ambient * 1.8 + 32;
+    }
+
+    public double getTargetFahr(){
+        return target * 1.8 + 32;
+    }
+
+    public String displayCelsius()
     {
         return "Ambient Temp: " + String.format("%.1f°C", ambient) +
                 "\nTarget Temp: " + String.format("%.1f°C", target);
+    }
+
+    public String displayFahrenheit()
+    {
+        return "Ambient Temp: " + String.format("%.1f°F", (ambient * 1.8) + 32) +
+                "\nTarget Temp: " + String.format("%.1f°F", (target * 1.8) + 32);
+    }
+
+    public Temperature clone(){
+        return new Temperature(this.getAmbient(), this.getTarget());
     }
 }

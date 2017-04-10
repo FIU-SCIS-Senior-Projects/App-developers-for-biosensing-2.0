@@ -2,22 +2,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.biosensing">
 
-    <!--BLE permissions to request a connection, accept a connection, and transfer data.-->
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <!-- BLE permissions to request a connection, accept a connection, and transfer data. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
-    <!-- If you want your app to initiate device discovery or manipulate Bluetooth settings, you must
-    also declare the BLUETOOTH_ADMIN permission. -->
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <!--
+    If you want your app to initiate device discovery or manipulate Bluetooth settings, you must
+    also declare the BLUETOOTH_ADMIN permission.
+    -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <!-- Available to devices that do not support BLE. -->
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
 
     <!-- In order to receive location updates. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Needed only for Android 5.0 or higher. -->
-    <uses-feature android:name="android.hardware.location.gps"/>
+    <uses-feature android:name="android.hardware.location.gps" />
 
+    <!-- Needed to connect to SQL server -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -35,8 +41,55 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DeviceControlActivity"/>
-        <service android:name=".BluetoothLeService" android:enabled="true"/>
+        <activity android:name=".DeviceControlActivity" />
+
+        <service
+            android:name=".BluetoothLeService"
+            android:enabled="true" />
+
+        <activity
+            android:name=".TargetTempActivity"
+            android:label="Target Temperature"
+            android:parentActivityName=".DeviceControlActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DeviceControlActivity" />
+        </activity>
+        <activity
+            android:name=".RealTargetTempActivity"
+            android:label="Target Temperature Real-Time Graph"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName=".TargetTempActivity"/>
+        <activity
+            android:name=".rangeTargetTempActivity"
+            android:label="Target Temperature Graph"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName=".TargetTempActivity" />
+        <activity
+            android:name=".RangeAmbientActivity"
+            android:label="Ambient Temperature Graph"
+            android:parentActivityName=".AmbientActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="android.support.v7.app.AppCompatActivity" />
+        </activity>
+        <activity
+            android:name=".AmbientActivity"
+            android:label="Ambient Temperature"
+            android:parentActivityName=".DeviceControlActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DeviceControlActivity" />
+        </activity>
+        <activity
+            android:name=".RealAmbientActivity"
+            android:label="@string/title_activity_real_ambient"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName=".AmbientActivity"/>
+
     </application>
 
 </manifest>

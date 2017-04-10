@@ -17,6 +17,7 @@
 package com.example.biosensing;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -31,9 +32,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +50,8 @@ import java.util.List;
  * communicates with {@code BluetoothLeService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class DeviceControlActivity extends Activity {
+public class DeviceControlActivity extends Activity
+        implements EquationDialog.EquationDialogListener{
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -69,6 +75,7 @@ public class DeviceControlActivity extends Activity {
     private final String HUMIDITY_CONFIG = "f000aa22-0451-4000-b000-000000000000";
     private final String BAROMETRIC_CONFIG = "f000aa42-0451-4000-b000-000000000000";
 
+    private int spinnerPos;
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -193,6 +200,29 @@ public class DeviceControlActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+        //set up spinner
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.graphs_choice, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinnerPos = position;
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     @Override
@@ -224,9 +254,11 @@ public class DeviceControlActivity extends Activity {
         if (mConnected) {
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_disconnect).setVisible(true);
+            menu.findItem(R.id.menu_settings).setVisible(true);
         } else {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
+            menu.findItem(R.id.menu_settings).setVisible(false);
         }
         return true;
     }
@@ -239,6 +271,9 @@ public class DeviceControlActivity extends Activity {
                 return true;
             case R.id.menu_disconnect:
                 mBluetoothLeService.disconnect();
+                return true;
+            case R.id.menu_settings:
+                showEquationDialog();
                 return true;
             case android.R.id.home:
                 onBackPressed();
@@ -338,5 +373,53 @@ public class DeviceControlActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        EquationDialog eDialog = (EquationDialog)dialog;
+
+        mBluetoothLeService.setRtia(eDialog.getRtia());
+        mBluetoothLeService.setVref_Div(eDialog.getVref());
+
+        Context context = getApplicationContext();
+        CharSequence text = "Vref_div was changed to " + mBluetoothLeService.getVref_Div() +
+                " and Rtia was changed to " + mBluetoothLeService.getRtia();
+        int duration = Toast.LENGTH_LONG;
+
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
+
+    public void showEquationDialog() {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new EquationDialog();
+        dialog.show(getFragmentManager(), "EquationDialog");
+    }
+
+    //on click of button
+    public void chooseGraph(View view) {
+        Intent intent = new Intent(this, DeviceControlActivity.class);
+
+        switch (spinnerPos) {
+            //user chose ambient temp
+            case 0:
+                intent = new Intent(this, AmbientActivity.class);
+                break;
+            //target temp
+            case 1:
+                intent = new Intent(this, TargetTempActivity.class);
+                break;
+            //heart rate
+            case 2:
+                intent = new Intent(this, TargetTempActivity.class);
+                break;
+            //health thermometer
+            case 3:
+                intent = new Intent(this, TargetTempActivity.class);
+                break;
+        }
+        startActivity(intent);
     }
 }

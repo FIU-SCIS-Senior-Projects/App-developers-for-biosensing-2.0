@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="graphs_choice">
+        <item>Ambient Temperature Graphs</item>
+        <item>Target Temperature  Graphs</item>
+        <item>Heart Rate Graphs</item>
+        <item>Health Thermometer Graphs</item>
+    </string-array>
+</resources>

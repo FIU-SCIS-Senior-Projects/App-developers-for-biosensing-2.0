@@ -32,8 +32,14 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -48,9 +54,17 @@ public class BluetoothLeService extends Service {
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
 
+    private double vRef_Div = 0.1645;
+    private double rTia = 350000;
+
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
+
+    private ConnectionClass connectionClass;
+    private Connection con;
+    private Temperature temperature;
+    private ExecutorService exService;
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -69,6 +83,8 @@ public class BluetoothLeService extends Service {
             UUID.fromString(SampleGattAttributes.IR_TEMP_DATA);
     public final static UUID UUID_HUMIDITY_DATA =
             UUID.fromString(SampleGattAttributes.HUMIDITY_DATA);
+    public final static UUID UUID_TEMPERATURE_MEASUREMENT =
+            UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -143,6 +159,8 @@ public class BluetoothLeService extends Service {
                 Log.d(TAG, "Heart rate format UINT8.");
             }
             final int heartRate = characteristic.getIntValue(format, 1);
+            //int heartRate = characteristic.getIntValue(format, 1);
+            //heartRate = (int)currentEquation(heartRate);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         }
@@ -151,8 +169,10 @@ public class BluetoothLeService extends Service {
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Temperature temp = SensorDataConverter.convertTemp(value);
-                Log.d(TAG, temp.toString());
-                intent.putExtra(EXTRA_DATA, temp.toString());
+                //save global variable to update db with
+                temperature = temp.clone();
+                Log.d(TAG, temp.displayFahrenheit());
+                intent.putExtra(EXTRA_DATA, temp.displayFahrenheit());
             }
         }
         else if (UUID_HUMIDITY_DATA.equals(characteristic.getUuid())) {
@@ -163,6 +183,14 @@ public class BluetoothLeService extends Service {
                 Log.d(TAG, String.format("%.1f %%rH", humidity));
                 intent.putExtra(EXTRA_DATA, String.format("%.1f %%rH", humidity));
             }
+        }
+        else if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())){
+            int format = BluetoothGattCharacteristic.FORMAT_FLOAT;
+            final float tempMeasurement = characteristic.getFloatValue(format, 1);
+            //float tempMeasurement = characteristic.getFloatValue(format, 1);
+            //tempMeasurement = (int)currentEquation(tempMeasurement);
+            Log.d(TAG, String.format("Received temperature: %f", tempMeasurement));
+            intent.putExtra(EXTRA_DATA, String.valueOf(tempMeasurement));
         }
         else {
             // For all other profiles, writes the data formatted in HEX.
@@ -205,6 +233,49 @@ public class BluetoothLeService extends Service {
      * @return Return true if the initialization is successful.
      */
     public boolean initialize() {
+        //Connect to SQL Server
+        connectionClass = new ConnectionClass();
+        con = connectionClass.CONN();
+
+        exService = Executors.newSingleThreadExecutor();
+        exService.execute(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    //push temp data to server ever 30 secs
+                    if(temperature != null){
+                        PreparedStatement prep1 = null;
+                        PreparedStatement prep2 = null;
+                        String query1 = "insert into dbo.tempA (temp) values (?)";
+                        String query2 = "insert into dbo.tempT (temp) values (?)";
+                        try{
+                            prep1 = con.prepareStatement(query1);
+                            prep2 = con.prepareStatement(query2);
+                            prep1.setDouble(1, temperature.getAmbientFahr());
+                            prep2.setDouble(1, temperature.getTargetFahr());
+                            prep1.executeUpdate();
+                            prep2.executeUpdate();
+                            temperature = null;
+                        }
+                        catch(SQLException se){
+                            Log.e("SQLERROR", se.getMessage());
+                        }
+                    }
+                    try{
+                        Thread.sleep(30000);
+                    }
+                    catch(InterruptedException ie){
+                        Log.e(TAG, ie.getMessage());
+                    }
+
+                    //push heart rate data every 30 secs
+
+
+                }
+            }
+        });
+
+
         // For API level 18 and above, get a reference to BluetoothAdapter through
         // BluetoothManager.
         if (mBluetoothManager == null) {
@@ -342,6 +413,12 @@ public class BluetoothLeService extends Service {
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBluetoothGatt.writeDescriptor(descriptor);
         }
+        else if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())){
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBluetoothGatt.writeDescriptor(descriptor);
+        }
 
     }
 
@@ -372,5 +449,37 @@ public class BluetoothLeService extends Service {
         characteristic.setValue(val);
         mBluetoothGatt.writeCharacteristic(characteristic);
 
+    }
+
+    public double currentEquation(int value)
+    {
+        double vOut;
+        double current;
+
+        vOut = (value/1023) * 3.3;
+        current = (vRef_Div - vOut)/rTia;
+
+        return current;
+    }
+
+
+    public void setVref_Div(double value)
+    {
+        vRef_Div = value;
+    }
+
+    public double getVref_Div()
+    {
+        return vRef_Div;
+    }
+
+    public void setRtia(double value)
+    {
+        rTia = value;
+    }
+
+    public double getRtia()
+    {
+        return rTia;
     }
 }
