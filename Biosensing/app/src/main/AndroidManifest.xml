@@ -48,16 +48,48 @@
             android:enabled="true" />
 
         <activity
-            android:name=".GraphsActivity"
-            android:label="@string/title_activity_graphs"
-            android:parentActivityName="android.support.v7.app.AppCompatActivity">
+            android:name=".TargetTempActivity"
+            android:label="Target Temperature"
+            android:parentActivityName=".DeviceControlActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DeviceControlActivity" />
+        </activity>
+        <activity
+            android:name=".RealTargetTempActivity"
+            android:label="Target Temperature Real-Time Graph"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName=".TargetTempActivity"/>
+        <activity
+            android:name=".rangeTargetTempActivity"
+            android:label="Target Temperature Graph"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName=".TargetTempActivity" />
+        <activity
+            android:name=".RangeAmbientActivity"
+            android:label="Ambient Temperature Graph"
+            android:parentActivityName=".AmbientActivity"
+            android:theme="@style/Theme.AppCompat">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="android.support.v7.app.AppCompatActivity" />
         </activity>
         <activity
-            android:name=".AllTargetTemp"
-            android:label="@string/title_activity_all_target_temp"></activity>
+            android:name=".AmbientActivity"
+            android:label="Ambient Temperature"
+            android:parentActivityName=".DeviceControlActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DeviceControlActivity" />
+        </activity>
+        <activity
+            android:name=".RealAmbientActivity"
+            android:label="@string/title_activity_real_ambient"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName=".AmbientActivity"/>
+
     </application>
 
 </manifest>

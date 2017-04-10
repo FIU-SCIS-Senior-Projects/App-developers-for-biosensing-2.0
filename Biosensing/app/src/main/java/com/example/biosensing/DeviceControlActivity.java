@@ -51,7 +51,7 @@ import java.util.List;
  * Bluetooth LE API.
  */
 public class DeviceControlActivity extends Activity
-        implements EquationDialog.EquationDialogListener {
+        implements EquationDialog.EquationDialogListener{
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -76,7 +76,6 @@ public class DeviceControlActivity extends Activity
     private final String BAROMETRIC_CONFIG = "f000aa42-0451-4000-b000-000000000000";
 
     private int spinnerPos;
-
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -224,33 +223,6 @@ public class DeviceControlActivity extends Activity
 
             }
         });
-
-
-    }
-
-    //on click of button
-    public void chooseGraph(View view){
-        Intent intent = new Intent(this, DeviceControlActivity.class);
-
-        switch(spinnerPos){
-            //user chose ambient temp
-            case 0:
-                intent = new Intent(this, GraphsActivity.class);
-                break;
-            //target temp
-            case 1:
-                intent = new Intent(this, GraphsActivity.class);
-                break;
-            //heart rate
-            case 2:
-                intent = new Intent(this, GraphsActivity.class);
-                break;
-            //health thermometer
-            case 3:
-                intent = new Intent(this, GraphsActivity.class);
-                break;
-        }
-        startActivity(intent);
     }
 
     @Override
@@ -426,7 +398,28 @@ public class DeviceControlActivity extends Activity
         dialog.show(getFragmentManager(), "EquationDialog");
     }
 
+    //on click of button
+    public void chooseGraph(View view) {
+        Intent intent = new Intent(this, DeviceControlActivity.class);
 
-
-
+        switch (spinnerPos) {
+            //user chose ambient temp
+            case 0:
+                intent = new Intent(this, AmbientActivity.class);
+                break;
+            //target temp
+            case 1:
+                intent = new Intent(this, TargetTempActivity.class);
+                break;
+            //heart rate
+            case 2:
+                intent = new Intent(this, TargetTempActivity.class);
+                break;
+            //health thermometer
+            case 3:
+                intent = new Intent(this, TargetTempActivity.class);
+                break;
+        }
+        startActivity(intent);
+    }
 }

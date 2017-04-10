@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:paddingBottom="2dip"
         android:textStyle="bold"
-        android:text="Enter a custom range of dates below to return a graph with target temperature data within that range" />
+        android:text="Enter a custom range of dates below to return a graph with ambient temperature data within that range" />
 
 
     <Button
@@ -64,7 +64,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="2dip"
-        android:text="View a real-time graph of target temperature data"
+        android:text="View a real-time graph of ambient temperature data"
         android:textStyle="bold" />
 
     <Button
@@ -72,7 +72,7 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="allTargetTemp"
+        android:onClick="realAmbientTemp"
         android:text="Go" />
 
 </LinearLayout>

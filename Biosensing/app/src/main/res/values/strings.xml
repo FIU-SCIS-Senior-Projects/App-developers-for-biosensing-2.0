@@ -23,4 +23,9 @@
     <string name="menu_stop">Stop</string>
     <string name="title_activity_graphs">GraphsActivity</string>
     <string name="title_activity_all_target_temp">AllTargetTemp</string>
+    <string name="title_activity_range_target_temp">rangeTargetTempAct</string>
+    <string name="title_activity_range_ambient">RangeAmbientActivity</string>
+    <string name="title_activity_ambient">AmbientActivity</string>
+    <string name="title_activity_real_ambient">RealAmbientActivity</string>
+    <string name="title_activity_all_ambient">AllAmbientActivity</string>
 </resources>
