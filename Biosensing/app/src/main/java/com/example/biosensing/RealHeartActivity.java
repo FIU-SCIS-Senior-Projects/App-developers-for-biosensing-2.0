@@ -15,12 +15,14 @@ import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class RealHeartActivity extends AppCompatActivity {
@@ -29,6 +31,8 @@ public class RealHeartActivity extends AppCompatActivity {
     private ConnectionClass connectionClass;
     private ArrayList<Integer> rates;
     private ArrayList<Timestamp> times;
+    private Calendar rightNow;
+    private Connection con;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +58,10 @@ public class RealHeartActivity extends AppCompatActivity {
 
         //connect to db
         connectionClass = new ConnectionClass();
-        Connection con = connectionClass.CONN();
-        String query;
-        query = "select time, rate from dbo.heart order by time asc";
+        con = connectionClass.CONN();
+
+        rightNow = Calendar.getInstance();
+        String query = "select time, rate from dbo.heart order by time asc";
 
         try{
             Statement stmt = con.createStatement();
@@ -109,13 +114,12 @@ public class RealHeartActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // we're going to simulate real time with thread that append data to the graph
-        /*new Thread(new Runnable() {
+        // make real time graph by adding new data and reloading
+        new Thread(new Runnable() {
 
             @Override
             public void run() {
-                // we add 100 new entries
-                for (int i = 0; i < 100; i++) {
+                while(true) {
                     runOnUiThread(new Runnable() {
 
                         @Override
@@ -123,24 +127,49 @@ public class RealHeartActivity extends AppCompatActivity {
                             addEntry();
                         }
                     });
-
-                    // sleep to slow down the add of entries
+                    // wait 30 seconds
                     try {
-                        Thread.sleep(600);
+                        Thread.sleep(30000);
                     } catch (InterruptedException e) {
-                        // manage error ...
+                        Log.e("THREADINGERROR:", e.getMessage());
                     }
                 }
             }
-        }).start();*/
+        }).start();
+
     }
     // add data to graph
     private void addEntry() {
-        //int y = gen.nextInt(11) + 70;
 
+        Timestamp ts = new Timestamp(rightNow.getTimeInMillis());
+        int count = 0;
+        ArrayList<Integer> rate = new ArrayList<>();
+        ArrayList<Timestamp> time = new ArrayList<>();
 
-        // here, we choose to display max 10 points on the viewport and we scroll to end
-        //series.appendData(new DataPoint(lastX++, y), true, 10);
+        //return data after timestamp
+        PreparedStatement prep = null;
+        String query = "select time, rate from dbo.heart where (time >= ?) order by time asc";
+        try{
+            prep = con.prepareStatement(query);
+            prep.setTimestamp(1, ts);
+            ResultSet rs = prep.executeQuery();
+            //update timestamp
+            rightNow = Calendar.getInstance();
+
+            while(rs.next()){
+                time.add(rs.getTimestamp(1));
+                rate.add(rs.getInt(2));
+                count++;
+            }
+
+        }
+        catch(SQLException se){
+            Log.e("SQLERROR", se.getMessage());
+        }
+
+        for(int i = 0; i < count; i++){
+            series.appendData(new DataPoint(time.get(i), rate.get(i)), true, 20);
+        }
     }
 
 }

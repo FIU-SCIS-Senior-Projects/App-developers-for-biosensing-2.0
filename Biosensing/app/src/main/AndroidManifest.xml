@@ -86,7 +86,7 @@
         </activity>
         <activity
             android:name=".RealAmbientActivity"
-            android:label="@string/title_activity_real_ambient"
+            android:label="Ambient Temperature Real-Time Graph"
             android:parentActivityName=".AmbientActivity"
             android:theme="@style/Theme.AppCompat" />
         <activity
