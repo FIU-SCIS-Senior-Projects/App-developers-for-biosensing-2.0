@@ -64,6 +64,8 @@ public class BluetoothLeService extends Service {
     private ConnectionClass connectionClass;
     private Connection con;
     private Temperature temperature;
+    private float thermometer = -1;
+    private int heart = -1;
     private ExecutorService exService;
 
     public final static String ACTION_GATT_CONNECTED =
@@ -163,6 +165,8 @@ public class BluetoothLeService extends Service {
             //heartRate = (int)currentEquation(heartRate);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
+            //save heart rate to update db with
+            heart = heartRate;
         }
         else if (UUID_IR_TEMP_DATA.equals(characteristic.getUuid())) {
             Log.d(TAG, "Temp format UINT16.");
@@ -191,6 +195,8 @@ public class BluetoothLeService extends Service {
             //tempMeasurement = (int)currentEquation(tempMeasurement);
             Log.d(TAG, String.format("Received temperature: %f", tempMeasurement));
             intent.putExtra(EXTRA_DATA, String.valueOf(tempMeasurement));
+            //save heart rate to update db with
+            thermometer = tempMeasurement;
         }
         else {
             // For all other profiles, writes the data formatted in HEX.
@@ -229,6 +235,8 @@ public class BluetoothLeService extends Service {
 
     /**
      * Initializes a reference to the local Bluetooth adapter.
+     * Spawns a never-ending thread that pushes the connected sensor data to the server
+     * every 30 seconds.
      *
      * @return Return true if the initialization is successful.
      */
@@ -242,7 +250,7 @@ public class BluetoothLeService extends Service {
             @Override
             public void run() {
                 while(true){
-                    //push temp data to server ever 30 secs
+                    //push temp data to server
                     if(temperature != null){
                         PreparedStatement prep1 = null;
                         PreparedStatement prep2 = null;
@@ -261,16 +269,43 @@ public class BluetoothLeService extends Service {
                             Log.e("SQLERROR", se.getMessage());
                         }
                     }
+
+                    //push heart rate data
+                    if(heart != -1){
+                        PreparedStatement prep = null;
+                        String query = "insert into dbo.heart (rate) values (?)";
+                        try{
+                            prep = con.prepareStatement(query);
+                            prep.setInt(1, heart);
+                            prep.executeUpdate();
+                            heart = -1;
+                        }
+                        catch(SQLException se){
+                            Log.e("SQLERROR", se.getMessage());
+                        }
+                    }
+
+                    //push health thermometer data
+                    if(thermometer != -1){
+                        PreparedStatement prep = null;
+                        String query = "insert into dbo.therm (temp) values (?)";
+                        try{
+                            prep = con.prepareStatement(query);
+                            prep.setDouble(1, (double)thermometer);
+                            prep.executeUpdate();
+                            heart = -1;
+                        }
+                        catch(SQLException se){
+                            Log.e("SQLERROR", se.getMessage());
+                        }
+                    }
+
                     try{
                         Thread.sleep(30000);
                     }
                     catch(InterruptedException ie){
                         Log.e(TAG, ie.getMessage());
                     }
-
-                    //push heart rate data every 30 secs
-
-
                 }
             }
         });

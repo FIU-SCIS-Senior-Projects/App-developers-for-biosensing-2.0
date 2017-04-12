@@ -59,13 +59,13 @@
         <activity
             android:name=".RealTargetTempActivity"
             android:label="Target Temperature Real-Time Graph"
-            android:theme="@style/Theme.AppCompat"
-            android:parentActivityName=".TargetTempActivity"/>
+            android:parentActivityName=".TargetTempActivity"
+            android:theme="@style/Theme.AppCompat" />
         <activity
             android:name=".rangeTargetTempActivity"
             android:label="Target Temperature Graph"
-            android:theme="@style/Theme.AppCompat"
-            android:parentActivityName=".TargetTempActivity" />
+            android:parentActivityName=".TargetTempActivity"
+            android:theme="@style/Theme.AppCompat" />
         <activity
             android:name=".RangeAmbientActivity"
             android:label="Ambient Temperature Graph"
@@ -87,9 +87,58 @@
         <activity
             android:name=".RealAmbientActivity"
             android:label="@string/title_activity_real_ambient"
+            android:parentActivityName=".AmbientActivity"
+            android:theme="@style/Theme.AppCompat" />
+        <activity
+            android:name=".HeartActivity"
+            android:label="Heart Rate"
+            android:parentActivityName=".DeviceControlActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.biosensing.DeviceControlActivity" />
+        </activity>
+        <activity
+            android:name=".RangeHeartActivity"
+            android:label="Heart Rate Graph"
+            android:parentActivityName=".HeartActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.biosensing.HeartActivity" />
+        </activity>
+        <activity
+            android:name=".RealHeartActivity"
+            android:label="Heart Rate Real-Time Graph"
+            android:parentActivityName=".HeartActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.biosensing.HeartActivity" />
+        </activity>
+        <activity
+            android:name=".ThermActivity"
+            android:label="Health Thermometer"
+            android:parentActivityName=".DeviceControlActivity"
+            android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.biosensing.DeviceControlActivity" />
+        </activity>
+        <activity
+            android:name=".RangeThermActivity"
+            android:label="Health Thermometer Graph"
             android:theme="@style/Theme.AppCompat"
-            android:parentActivityName=".AmbientActivity"/>
+            android:parentActivityName="com.example.biosensing.ThermActivity">
 
+        </activity>
+        <activity
+            android:name=".RealThermActivity"
+            android:label="Health Thermometer Real-Time Graph"
+            android:theme="@style/Theme.AppCompat"
+            android:parentActivityName="com.example.biosensing.ThermActivity">
+
+        </activity>
     </application>
 
 </manifest>

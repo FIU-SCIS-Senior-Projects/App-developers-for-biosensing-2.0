@@ -98,8 +98,11 @@ public class RealAmbientActivity extends AppCompatActivity {
         graph.getGridLabelRenderer().setNumHorizontalLabels(2); // actually shows 1, b/c of space
 
         // set manual x bounds to have nice steps
-        viewport.setMinX(times.get(0).getTime());
-        viewport.setMaxX(times.get(count-1).getTime());
+        if(!times.isEmpty()){
+            viewport.setMinX(times.get(0).getTime());
+            viewport.setMaxX(times.get(count-1).getTime());
+        }
+
 
 
     }

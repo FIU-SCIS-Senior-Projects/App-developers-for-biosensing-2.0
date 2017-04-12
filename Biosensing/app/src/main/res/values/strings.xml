@@ -28,4 +28,10 @@
     <string name="title_activity_ambient">AmbientActivity</string>
     <string name="title_activity_real_ambient">RealAmbientActivity</string>
     <string name="title_activity_all_ambient">AllAmbientActivity</string>
+    <string name="title_activity_heart">HeartActivity</string>
+    <string name="title_activity_range_heart">RangeHeartActivity</string>
+    <string name="title_activity_real_heart">RealHeartActivity</string>
+    <string name="title_activity_therm">ThermActivity</string>
+    <string name="title_activity_range_therm">RangeThermActivity</string>
+    <string name="title_activity_real_therm">RealThermActivity</string>
 </resources>

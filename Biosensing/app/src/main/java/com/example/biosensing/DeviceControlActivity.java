@@ -413,11 +413,11 @@ public class DeviceControlActivity extends Activity
                 break;
             //heart rate
             case 2:
-                intent = new Intent(this, TargetTempActivity.class);
+                intent = new Intent(this, HeartActivity.class);
                 break;
             //health thermometer
             case 3:
-                intent = new Intent(this, TargetTempActivity.class);
+                intent = new Intent(this, ThermActivity.class);
                 break;
         }
         startActivity(intent);

@@ -1,8 +1,7 @@
 package com.example.biosensing;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,43 +15,35 @@ import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-public class rangeTargetTempActivity extends AppCompatActivity {
+public class RealThermActivity extends AppCompatActivity {
 
-    //Note: uses both java.sql.Date and java.util.Date
-
-    private Timestamp startDate;
-    private Timestamp endDate;
-    private ConnectionClass connectionClass;
     private LineGraphSeries<DataPoint> series;
+    private ConnectionClass connectionClass;
     private ArrayList<Double> temps;
     private ArrayList<Timestamp> times;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_range_target_temp);
-
-        //get range of dates
-        Intent intent = getIntent();
-        startDate = new Timestamp(intent.getLongExtra("START_DATE", -1));
-        endDate = new Timestamp(intent.getLongExtra("END_DATE", -1));
-
-
+        setContentView(R.layout.activity_real_therm);
         // we get graph view instance
-        GraphView graph = (GraphView) findViewById(R.id.rangeTargetTempGraph);
+        GraphView graph = (GraphView) findViewById(R.id.realThermGraph);
+
+        //series.setColor(Color.GREEN);
 
         // customize viewport
         Viewport viewport = graph.getViewport();
         viewport.setYAxisBoundsManual(true);
-        viewport.setMinY(-30);
-        viewport.setMaxY(110);
+        viewport.setMinY(0);
+        viewport.setMaxY(120);
         viewport.setXAxisBoundsManual(true);
         viewport.setScrollable(true);
         viewport.setScalable(true);
@@ -64,24 +55,20 @@ public class rangeTargetTempActivity extends AppCompatActivity {
         //connect to db
         connectionClass = new ConnectionClass();
         Connection con = connectionClass.CONN();
+        String query;
+        query = "select time, temp from dbo.therm order by time asc";
 
-        PreparedStatement prep = null;
-        String query = "select time, temp from dbo.tempT where (time >= ?) and (time <= ?) order by time asc";
         try{
-            prep = con.prepareStatement(query);
-            prep.setTimestamp(1, startDate);
-            prep.setTimestamp(2, endDate);
-            ResultSet rs = prep.executeQuery();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
 
             while(rs.next()){
                 times.add(rs.getTimestamp(1));
                 temps.add(rs.getDouble(2));
-
                 count++;
             }
-
         }
-        catch(SQLException se){
+        catch (SQLException se){
             Log.e("SQLERROR", se.getMessage());
         }
 
@@ -93,15 +80,15 @@ public class rangeTargetTempActivity extends AppCompatActivity {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
                 long x = (long)dataPoint.getX();
-                java.util.Date date = new java.util.Date(x);
+                Date date = new Date(x);
                 DateTimePoint dp = new DateTimePoint(date, dataPoint.getY());
 
-                Toast.makeText(rangeTargetTempActivity.this, "Date/Time, Temperature:\n"+dp, Toast.LENGTH_LONG).show();
+                Toast.makeText(RealThermActivity.this, "Date/Time, Temperature:\n"+dp, Toast.LENGTH_LONG).show();
             }
         });
 
         for(int i = 0; i < count; i++){
-            series.appendData(new DataPoint(times.get(i), temps.get(i)), true, 50);
+            series.appendData(new DataPoint(times.get(i), temps.get(i)), true, 20);
         }
         graph.addSeries(series);
         // set date label formatter
@@ -117,7 +104,43 @@ public class rangeTargetTempActivity extends AppCompatActivity {
 
 
 
-
-
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // we're going to simulate real time with thread that append data to the graph
+        /*new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                // we add 100 new entries
+                for (int i = 0; i < 100; i++) {
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            addEntry();
+                        }
+                    });
+
+                    // sleep to slow down the add of entries
+                    try {
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        // manage error ...
+                    }
+                }
+            }
+        }).start();*/
+    }
+    // add data to graph
+    private void addEntry() {
+        //int y = gen.nextInt(11) + 70;
+
+
+        // here, we choose to display max 10 points on the viewport and we scroll to end
+        //series.appendData(new DataPoint(lastX++, y), true, 10);
+    }
+
 }
