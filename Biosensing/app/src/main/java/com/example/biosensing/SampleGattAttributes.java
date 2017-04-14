@@ -28,7 +28,7 @@ public class SampleGattAttributes {
     public static String IR_TEMP_DATA = "f000aa01-0451-4000-b000-000000000000";
     public static String HUMIDITY_DATA = "f000aa21-0451-4000-b000-000000000000";
     public static String BAROMETRIC_DATA = "f000aa41-0451-4000-b000-000000000000";
-    public static String TEMPERATURE_MEASUREMENT = "f0002a1c-0000-1000-8000-00805f9b34fb";
+    public static String TEMPERATURE_MEASUREMENT = "00002a1c-0000-1000-8000-00805f9b34fb";
 
 
     static {
@@ -38,7 +38,7 @@ public class SampleGattAttributes {
         attributes.put("f000aa00-0451-4000-b000-000000000000", "IR Temperature Service");
         attributes.put("f000aa20-0451-4000-b000-000000000000", "Humidity Service");
         attributes.put("f000aa40-0451-4000-b000-000000000000", "Barometric Service");
-        attributes.put("f0001809-0000-1000-8000-00805f9b34fb", "Health Thermometer Service");
+        attributes.put("00001809-0000-1000-8000-00805f9b34fb", "Health Thermometer Service");
         attributes.put("00001800-0000-1000-8000-00805f9b34fb", "Generic Access Service");
         attributes.put("00001801-0000-1000-8000-00805f9b34fb", "Generic Attribute Service");
         // Sample Characteristics.
