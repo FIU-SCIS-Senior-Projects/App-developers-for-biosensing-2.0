@@ -75,10 +75,6 @@ public class DeviceControlActivity extends Activity
     private final String HUMIDITY_CONFIG = "f000aa22-0451-4000-b000-000000000000";
     private final String BAROMETRIC_CONFIG = "f000aa42-0451-4000-b000-000000000000";
 
-    private final String HEART_RATE_MEASUREMENT = "00002a37-0000-1000-8000-00805f9b34fb";
-    private final String TEMPERATURE_MEASUREMENT = "00002a1c-0000-1000-8000-00805f9b34fb";
-    private final String IR_TEMP_DATA = "f000aa01-0451-4000-b000-000000000000";
-
     private int spinnerPos;
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -122,9 +118,8 @@ public class DeviceControlActivity extends Activity
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
-                findCharacteristic(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                displayData("Receiving data.");
+                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
         }
     };
@@ -319,9 +314,9 @@ public class DeviceControlActivity extends Activity
         for (BluetoothGattService gattService : gattServices) {
             HashMap<String, String> currentServiceData = new HashMap<String, String>();
             uuid = gattService.getUuid().toString();
-            //currentServiceData.put(
-            //        LIST_NAME, SampleGattAttributes.lookup(uuid, unknownServiceString));
-            //currentServiceData.put(LIST_UUID, uuid);
+            currentServiceData.put(
+                    LIST_NAME, SampleGattAttributes.lookup(uuid, unknownServiceString));
+            currentServiceData.put(LIST_UUID, uuid);
             gattServiceData.add(currentServiceData);
 
             ArrayList<HashMap<String, String>> gattCharacteristicGroupData =
@@ -336,9 +331,11 @@ public class DeviceControlActivity extends Activity
                 charas.add(gattCharacteristic);
                 HashMap<String, String> currentCharaData = new HashMap<String, String>();
                 uuid = gattCharacteristic.getUuid().toString();
-                //currentCharaData.put(
-                //        LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
-                //currentCharaData.put(LIST_UUID, uuid);
+
+
+                currentCharaData.put(
+                        LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
+                currentCharaData.put(LIST_UUID, uuid);
                 gattCharacteristicGroupData.add(currentCharaData);
                 //Enable temp
                 if (uuid.equals(IR_TEMP_CONFIG)) {
@@ -424,46 +421,5 @@ public class DeviceControlActivity extends Activity
                 break;
         }
         startActivity(intent);
-    }
-
-    private void setNotification(BluetoothGattCharacteristic chara)
-    {
-        if (mGattCharacteristics != null) {
-            final BluetoothGattCharacteristic characteristic = chara;
-            final int charaProp = characteristic.getProperties();
-
-            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                mBluetoothLeService.readCharacteristic(characteristic);
-            }
-            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                mBluetoothLeService.setCharacteristicNotification(
-                        characteristic, true);
-            }
-
-        }
-    }
-
-    private void findCharacteristic(List<BluetoothGattService> gattServices)
-    {
-        String uuid = null;
-        for (BluetoothGattService gattService : gattServices) {
-            List<BluetoothGattCharacteristic> gattCharacteristics =
-                    gattService.getCharacteristics();
-
-            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                uuid = gattCharacteristic.getUuid().toString();
-
-                if (uuid.equals(HEART_RATE_MEASUREMENT)) {
-                    setNotification(gattCharacteristic);
-                }
-                else if (uuid.equals(TEMPERATURE_MEASUREMENT)){
-                    setNotification(gattCharacteristic);
-                }
-                else if (uuid.equals(IR_TEMP_DATA)){
-                    setNotification((gattCharacteristic));
-                }
-            }
-
-        }
     }
 }

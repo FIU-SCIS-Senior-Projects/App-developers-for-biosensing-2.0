@@ -51,8 +51,8 @@ public class RangeHeartActivity extends AppCompatActivity {
         // customize viewport
         Viewport viewport = graph.getViewport();
         viewport.setYAxisBoundsManual(true);
-        viewport.setMinY(0);
-        viewport.setMaxY(120);
+        viewport.setMinY(50);
+        //viewport.setMaxY(120);
         viewport.setXAxisBoundsManual(true);
         viewport.setScrollable(true);
         viewport.setScalable(true);
@@ -100,7 +100,7 @@ public class RangeHeartActivity extends AppCompatActivity {
         });
 
         for(int i = 0; i < count; i++){
-            series.appendData(new DataPoint(times.get(i), rates.get(i)), true, 50);
+            series.appendData(new DataPoint(times.get(i), rates.get(i)), true, 200);
         }
         graph.addSeries(series);
         // set date label formatter
@@ -113,6 +113,18 @@ public class RangeHeartActivity extends AppCompatActivity {
             viewport.setMinX(times.get(0).getTime());
             viewport.setMaxX(times.get(count - 1).getTime());
         }
+
+        if(!rates.isEmpty()){
+            int max = 0;
+
+            for(int i = 0; i < count; i++)
+            {
+                if(rates.get(i) > max)
+                    max = rates.get(i);
+            }
+            viewport.setMaxY(max + 50);
+        }
+
     }
 
 }

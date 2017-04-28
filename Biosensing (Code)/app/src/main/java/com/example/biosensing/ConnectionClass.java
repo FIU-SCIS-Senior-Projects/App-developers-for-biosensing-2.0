@@ -10,7 +10,8 @@ import java.sql.SQLException;
 import static android.content.ContentValues.TAG;
 
 public class ConnectionClass {
-    private String ip = "192.168.1.243";
+    private String ip = "192.168.1.192";
+    //private String ip = "10.109.239.112";
     private String classs = "net.sourceforge.jtds.jdbc.Driver";
     private String db = "biosensor";
     private String un = "client";
@@ -37,7 +38,11 @@ public class ConnectionClass {
         } catch (Exception e) {
             Log.e("ERROR", e.getMessage());
         }
-        Log.i(TAG, "Connected to SQL Server");
+        if(conn != null)
+            Log.i(TAG, "Connected to SQL Server");
+        else{
+            Log.i(TAG, "Did not connect to SQL Server");
+        }
         return conn;
     }
 }

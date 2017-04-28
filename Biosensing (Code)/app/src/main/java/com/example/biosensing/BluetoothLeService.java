@@ -64,7 +64,7 @@ public class BluetoothLeService extends Service {
     private ConnectionClass connectionClass;
     private Connection con;
     private Temperature temperature;
-    private float thermometer = -1;
+    private double thermometer = -1;
     private int heart = -1;
     private ExecutorService exService;
 
@@ -191,12 +191,13 @@ public class BluetoothLeService extends Service {
         else if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())){
             int format = BluetoothGattCharacteristic.FORMAT_FLOAT;
             final float tempMeasurement = characteristic.getFloatValue(format, 1);
+            double tempMeasure = tempMeasurement * 1.8 + 32;
             //float tempMeasurement = characteristic.getFloatValue(format, 1);
             //tempMeasurement = (int)currentEquation(tempMeasurement);
-            Log.d(TAG, String.format("Received temperature: %f", tempMeasurement));
-            intent.putExtra(EXTRA_DATA, String.valueOf(tempMeasurement));
+            Log.d(TAG, String.format("Received temperature: %f", tempMeasure));
+            intent.putExtra(EXTRA_DATA, String.valueOf(tempMeasure));
             //save heart rate to update db with
-            thermometer = tempMeasurement;
+            thermometer = tempMeasure;
         }
         else {
             // For all other profiles, writes the data formatted in HEX.

@@ -46,8 +46,8 @@ public class RealHeartActivity extends AppCompatActivity {
         // customize viewport
         Viewport viewport = graph.getViewport();
         viewport.setYAxisBoundsManual(true);
-        viewport.setMinY(0);
-        viewport.setMaxY(120);
+        viewport.setMinY(50);
+        //viewport.setMaxY(120);
         viewport.setXAxisBoundsManual(true);
         viewport.setScrollable(true);
         viewport.setScalable(true);
@@ -107,7 +107,16 @@ public class RealHeartActivity extends AppCompatActivity {
             viewport.setMaxX(times.get(count-1).getTime());
         }
 
+        if(!rates.isEmpty()){
+            int max = 0;
 
+            for(int i = 0; i < count; i++)
+            {
+                if(rates.get(i) > max)
+                    max = rates.get(i);
+            }
+            viewport.setMaxY(max + 50);
+        }
 
     }
 
